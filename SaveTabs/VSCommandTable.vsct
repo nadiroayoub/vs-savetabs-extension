@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <Extern href="stdidcmd.h" />
+  <Extern href="vsshlids.h" />
+  <Include href="KnownImageIds.vsct" />
+  <Include href="VSGlobals.vsct" />
+
+  <Commands package="SaveTabs">
+    <Groups>
+      <Group guid="SaveTabs" id="MyMenuGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_EXTENSIONS" />
+      </Group>
+    </Groups>
+
+    <!--This section defines the elements the user can interact with, like a menu command or a button
+        or combo box in a toolbar. -->
+    <Buttons>
+      <Button guid="SaveTabs" id="MyCommand" priority="0x0100" type="Button">
+        <Parent guid="SaveTabs" id="MyMenuGroup" />
+        <Icon guid="ImageCatalogGuid" id="Settings" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <Strings>
+          <ButtonText>Save and Load Tabs</ButtonText>
+          <LocCanonicalName>.Extensions.SaveTabs</LocCanonicalName>
+        </Strings>
+      </Button>
+      <Button guid="guidSaveTabsPackageCmdSet" id="cmdidSaveTabsDialogCommand" priority="0x0100" type="Button">
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>SaveTabsDialog</ButtonText>
+        </Strings>
+      </Button>
+    </Buttons>
+    <Bitmaps>
+      <Bitmap guid="guidImages" href="Resources\SaveTabsDialogCommand.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows, bmpPicStrikethrough" />
+    </Bitmaps>
+  </Commands>
+
+  <Symbols>
+    <GuidSymbol name="SaveTabs" value="{4234ab2c-8319-4c88-9241-00cde0494d02}">
+      <IDSymbol name="MyMenuGroup" value="0x0001" />
+      <IDSymbol name="MyCommand" value="0x0100" />
+    </GuidSymbol>
+  
+    <GuidSymbol value="{c118074a-aed7-49ed-8b33-d2a42ffa5f1b}" name="guidSaveTabsPackageCmdSet">
+      <IDSymbol value="256" name="cmdidSaveTabsDialogCommand" />
+    </GuidSymbol>
+  
+    <GuidSymbol value="{0c3df1c5-a3f8-4298-80c6-c84b6027957d}" name="guidImages">
+      <IDSymbol name="bmpPic1" value="1" />
+      <IDSymbol name="bmpPic2" value="2" />
+      <IDSymbol name="bmpPicSearch" value="3" />
+      <IDSymbol name="bmpPicX" value="4" />
+      <IDSymbol name="bmpPicArrows" value="5" />
+      <IDSymbol name="bmpPicStrikethrough" value="6" />
+    </GuidSymbol>
+  
+    <GuidSymbol name="guidSHLMainMenu" value="{d309f791-903f-11d0-9efc-00a0c911004f}">
+        <IDSymbol name="IDM_VS_MENU_EXTENSIONS" value="0x0091" />
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>
