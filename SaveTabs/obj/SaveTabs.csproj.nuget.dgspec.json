@@ -1,21 +1,26 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Ayoub.Nadir\\source\\repos\\SaveTabs\\SaveTabs\\SaveTabs.csproj": {}
+    "C:\\Users\\nadir\\Documents\\Proyects\\SaveTabs\\SaveTabs.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Ayoub.Nadir\\source\\repos\\SaveTabs\\SaveTabs\\SaveTabs.csproj": {
+    "C:\\Users\\nadir\\Documents\\Proyects\\SaveTabs\\SaveTabs.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Ayoub.Nadir\\source\\repos\\SaveTabs\\SaveTabs\\SaveTabs.csproj",
+        "projectUniqueName": "C:\\Users\\nadir\\Documents\\Proyects\\SaveTabs\\SaveTabs.csproj",
         "projectName": "SaveTabs",
-        "projectPath": "C:\\Users\\Ayoub.Nadir\\source\\repos\\SaveTabs\\SaveTabs\\SaveTabs.csproj",
-        "packagesPath": "C:\\Users\\Ayoub.Nadir\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Ayoub.Nadir\\source\\repos\\SaveTabs\\SaveTabs\\obj\\",
+        "projectPath": "C:\\Users\\nadir\\Documents\\Proyects\\SaveTabs\\SaveTabs.csproj",
+        "packagesPath": "C:\\Users\\nadir\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\nadir\\Documents\\Proyects\\SaveTabs\\obj\\",
         "projectStyle": "PackageReference",
         "skipContentFileWrite": true,
+        "UsingMicrosoftNETSdk": false,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\Ayoub.Nadir\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\nadir\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [

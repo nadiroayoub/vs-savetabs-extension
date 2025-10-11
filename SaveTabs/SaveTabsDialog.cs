@@ -1,8 +1,8 @@
-﻿using EnvDTE;
-using EnvDTE80;
-using Microsoft.VisualStudio.Shell;
-using System;
+﻿using Microsoft.VisualStudio.Shell;
 using System.Runtime.InteropServices;
+using EnvDTE80;
+using Microsoft.VisualStudio.Shell.Interop;
+
 
 namespace SaveTabs
 {
@@ -20,14 +20,13 @@ namespace SaveTabs
     [Guid("03a2319d-b0a4-49de-bd95-22fac9b719ff")]
     public class SaveTabsDialog : ToolWindowPane
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SaveTabsDialog"/> class.
-        /// </summary>
         public SaveTabsDialog() : base(null)
         {
-            this.Caption = "Save Tabs Tool Window";
-            this.Content = new SaveTabsDialogControl((DTE2)ServiceProvider.GlobalProvider.GetService(typeof(DTE)));
-
+            this.Caption = "Save Tabs Tool";
+            // Get DTE2 from VS
+            var dte = (DTE2)Microsoft.VisualStudio.Shell.Package.GetGlobalService(typeof(SDTE));
+            this.Content = new SaveTabsDialogControl(dte);
         }
+
     }
 }

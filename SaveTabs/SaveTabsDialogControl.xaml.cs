@@ -17,7 +17,26 @@ namespace SaveTabs
     public partial class SaveTabsDialogControl : UserControl
     {
         private readonly DTE2 _dte;
-        private const string StoragePath = "C:\\TabLayouts"; // Adjust path as needed
+        private EnvDTE.DocumentEvents _docEvents;
+        private EnvDTE.WindowEvents _winEvents;
+        private EnvDTE.SolutionEvents _solEvents;
+
+        private static string RootDir =>
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SaveTabs");
+
+        private static string Sanitize(string s)
+        {
+            foreach (var c in Path.GetInvalidFileNameChars()) s = s.Replace(c, '_');
+            s = (s ?? string.Empty).Trim();
+            return string.IsNullOrWhiteSpace(s) ? "Untitled" : s;
+        }
+
+        public void RefreshAll()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            LoadOpenTabs();
+            LoadSavedTabLists();
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SaveTabsDialogControl"/> class.
@@ -26,108 +45,150 @@ namespace SaveTabs
         {
             this.InitializeComponent();
             _dte = dte;
-            LoadOpenTabs();
-            LoadSavedTabLists();
-        }
 
+            // primera vez
+            RefreshAll();
+
+            // cada vez que la ventana vuelve a mostrarse
+            this.IsVisibleChanged += (_, __) =>
+            {
+                if (IsVisible)
+                    RefreshAll();
+            };
+        }
         private void LoadOpenTabs()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var documents = _dte.Documents;
-            var fileItems = new List<FileItem>();
-            var nameCounts = new Dictionary<string, int>();
 
-            foreach (Document doc in documents)
+            var tempDir = Path.GetTempPath();
+            var docs = _dte.Documents.Cast<Document>()
+                         .Select(d => d.FullName)
+                         .Where(p =>
+                             !string.IsNullOrWhiteSpace(p) &&
+                             File.Exists(p) &&
+                             !p.StartsWith(tempDir, StringComparison.OrdinalIgnoreCase)) // <-- تجاهل الملفات المؤقتة
+                         .Distinct()
+                         .ToList();
+
+            var groups = docs.GroupBy(Path.GetFileName);
+            var items = new List<FileItem>();
+
+            foreach (var g in groups)
             {
-                var fullPath = doc.FullName;
-                var fileName = Path.GetFileName(fullPath);
-
-                if (nameCounts.ContainsKey(fileName))
+                if (g.Count() == 1)
                 {
-                    nameCounts[fileName]++;
-                    fileName = $"{fileName} ({Path.GetDirectoryName(fullPath)})";
+                    var p = g.First();
+                    items.Add(new FileItem { FullPath = p, DisplayName = Path.GetFileName(p) });
                 }
                 else
                 {
-                    nameCounts[fileName] = 1;
+                    foreach (var p in g)
+                    {
+                        items.Add(new FileItem
+                        {
+                            FullPath = p,
+                            DisplayName = $"{Path.GetFileName(p)} ({Path.GetDirectoryName(p)})"
+                        });
+                    }
                 }
-
-                fileItems.Add(new FileItem { FullPath = fullPath, DisplayName = fileName });
             }
 
-            TabsListBox.ItemsSource = fileItems;
-
+            TabsListBox.ItemsSource = items.OrderBy(i => i.DisplayName).ToList();
         }
-
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedTabs = new List<string>();
-            foreach (FileItem item in TabsListBox.SelectedItems)
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var taskName = Sanitize(NameTextBox.Text);
+            if (string.IsNullOrWhiteSpace(taskName))
             {
-                selectedTabs.Add(item.FullPath);
+                System.Windows.MessageBox.Show("Please enter a task name.", "Save Tabs");
+                return;
             }
 
-            var taskName = NameTextBox.Text;
-            SaveSelectedTabs(selectedTabs, taskName);
+            // إذا ما تمش اختيار، نحفظ كامل المفتوحين (المحفوظين على الديسك)
+            var selected = TabsListBox.SelectedItems.Cast<FileItem>().Select(i => i.FullPath).ToList();
+            if (selected.Count == 0)
+            {
+                selected = _dte.Documents.Cast<Document>()
+                             .Select(d => d.FullName)
+                             .Where(p => !string.IsNullOrWhiteSpace(p) && File.Exists(p))
+                             .Distinct()
+                             .ToList();
+            }
+
+            Directory.CreateDirectory(RootDir);
+            var path = Path.Combine(RootDir, $"{taskName}.json");
+            File.WriteAllText(path, JsonConvert.SerializeObject(selected, Formatting.Indented));
+
             System.Windows.MessageBox.Show("Tabs saved successfully!", "Save Tabs", MessageBoxButton.OK, MessageBoxImage.Information);
-
-            // Clear the NameTextBox after saving
             NameTextBox.Clear();
-            LoadSavedTabLists(); // Refresh the list after saving
-
+            LoadSavedTabLists();
         }
 
         private void SaveSelectedTabs(List<string> selectedTabs, string taskName)
         {
             // Implement your save logic here, e.g., save to a file or settings
-            Directory.CreateDirectory(StoragePath);
-            var filePath = Path.Combine(StoragePath, $"{taskName}.json");
+            Directory.CreateDirectory(RootDir);
+            var filePath = Path.Combine(RootDir, $"{taskName}.json");
             var json = JsonConvert.SerializeObject(selectedTabs, Formatting.Indented);
             File.WriteAllText(filePath, json);
         }
 
         private void LoadSavedTabLists()
         {
-            SavedListsListBox.Items.Clear();
-            if (Directory.Exists(StoragePath))
-            {
-                var files = Directory.GetFiles(StoragePath, "*.json");
-                foreach (var file in files)
-                {
-                    SavedListsListBox.Items.Add(Path.GetFileNameWithoutExtension(file));
-                }
-            }
+            Directory.CreateDirectory(RootDir);
+            var files = Directory.GetFiles(RootDir, "*.json")
+                                 .Select(Path.GetFileNameWithoutExtension)
+                                 .OrderBy(x => x)
+                                 .ToList();
+            SavedListsListBox.ItemsSource = files;
         }
 
-        private void LoadButton_Click(object sender, RoutedEventArgs e)
+        private void Refresh_Click(object sender, RoutedEventArgs e)
         {
-            var selectedListName = (string)SavedListsListBox.SelectedItem;
-            if (selectedListName != null)
-            {
-                var filePath = Path.Combine(StoragePath, $"{selectedListName}.json");
-                var json = File.ReadAllText(filePath);
-                var tabs = JsonConvert.DeserializeObject<List<string>>(json);
-
-                ThreadHelper.ThrowIfNotOnUIThread();
-
-                foreach (var tab in tabs)
-                {
-                    var doc = _dte.Documents.Cast<Document>().FirstOrDefault(d => d.FullName == tab);
-                    if (doc != null)
-                    {
-                        // Document is already open, activate it
-                        doc.Activate();
-                    }
-                    else
-                    {
-                        // Document is not open, open it
-                        _dte.ItemOperations.OpenFile(tab);
-                    }
-                }
-
-                System.Windows.MessageBox.Show("Tabs loaded successfully!", "Load Tabs", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
+            ThreadHelper.ThrowIfNotOnUIThread();
+            LoadOpenTabs();
         }
+
+        private async void LoadButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SavedListsListBox.SelectedItem is not string name)
+            {
+                System.Windows.MessageBox.Show("Select a saved list.", "Load Tabs");
+                return;
+            }
+
+            var path = Path.Combine(RootDir, $"{Sanitize(name)}.json");
+            if (!File.Exists(path))
+            {
+                System.Windows.MessageBox.Show("Saved list not found.", "Load Tabs");
+                return;
+            }
+
+            var tabs = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(path)) ?? new();
+
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            int opened = 0;
+            foreach (var f in tabs)
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(f) || !File.Exists(f)) continue;
+
+                    var existing = _dte.Documents.Cast<Document>().FirstOrDefault(d => d.FullName == f);
+                    if (existing != null) existing.Activate();
+                    else _dte.ItemOperations.OpenFile(f);
+
+                    opened++;
+                }
+                catch { /* ignore */ }
+            }
+
+            System.Windows.MessageBox.Show($"{opened} tab(s) loaded successfully.", "Load Tabs", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
     }
 }
