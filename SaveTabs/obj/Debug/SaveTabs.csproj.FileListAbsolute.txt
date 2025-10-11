@@ -41,10 +41,8 @@ C:\Users\nadir\Documents\Proyects\SaveTabs\bin\Debug\SaveTabs.pkgdef
 C:\Users\nadir\Documents\Proyects\SaveTabs\bin\Debug\SaveTabs.vsix
 C:\Users\nadir\Documents\Proyects\SaveTabs\bin\Debug\extension.vsixmanifest
 C:\Users\nadir\Documents\Proyects\SaveTabs\obj\Debug\SaveTabs.csproj.AssemblyReference.cache
-C:\Users\nadir\Documents\Proyects\SaveTabs\obj\Debug\SaveTabsDialogControl.g.cs
 C:\Users\nadir\Documents\Proyects\SaveTabs\obj\Debug\SaveTabs_MarkupCompile.cache
 C:\Users\nadir\Documents\Proyects\SaveTabs\obj\Debug\SaveTabs_MarkupCompile.lref
-C:\Users\nadir\Documents\Proyects\SaveTabs\obj\Debug\SaveTabsDialogControl.baml
 C:\Users\nadir\Documents\Proyects\SaveTabs\obj\Debug\SaveTabs.g.resources
 C:\Users\nadir\Documents\Proyects\SaveTabs\obj\Debug\_EmptyResource.resources
 C:\Users\nadir\Documents\Proyects\SaveTabs\obj\Debug\SaveTabs.Resources.Languages.Strings.resources
@@ -65,3 +63,6 @@ C:\Users\nadir\Documents\Proyects\SaveTabs\obj\Debug\SaveTabs.latest.pkgdef
 C:\Users\nadir\Documents\Proyects\SaveTabs\obj\Debug\extension.vsixmanifest
 C:\Users\nadir\Documents\Proyects\SaveTabs\obj\Debug\files.json
 C:\Users\nadir\Documents\Proyects\SaveTabs\obj\Debug\createTemplateManifests.cache
+C:\Users\nadir\Documents\Proyects\SaveTabs\obj\Debug\Views\SaveTabsDialogControl.g.cs
+C:\Users\nadir\Documents\Proyects\SaveTabs\obj\Debug\Views\SaveTabsDialogControl.baml
+C:\Users\nadir\Documents\Proyects\SaveTabs\obj\Debug\_EmptyResource.resources.original
