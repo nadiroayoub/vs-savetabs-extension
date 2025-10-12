@@ -6,9 +6,8 @@
              xmlns:local="clr-namespace:SaveTabs.Resources.Languages"
              xmlns:vsfx="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
              mc:Ignorable="d"
-             Background="{DynamicResource {x:Static vsfx:EnvironmentColors.ToolWindowBackgroundBrushKey}}"
-             d:DesignHeight="400" d:DesignWidth="400">
-    
+             Background="{DynamicResource {x:Static vsfx:EnvironmentColors.ToolWindowBackgroundBrushKey}}" d:DesignWidth="400" Height="374">
+
     <Grid>
         <StackPanel Margin="10">
             <GroupBox >
@@ -27,21 +26,35 @@
             </GroupBox>
             <GroupBox Header="{x:Static local:Strings.SavedLists}" Margin="0,20,0,10" Foreground="{DynamicResource {x:Static vsfx:EnvironmentColors.ToolWindowTextBrushKey}}">
                 <StackPanel>
-                    <ListBox x:Name="SavedListsListBox" Height="100" SelectionMode="Single" 
-                             Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" 
-                             Foreground="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}"
-                             SelectionChanged="SavedListsListBox_SelectionChanged"
-                             KeyDown="SavedListsListBox_KeyDown" />
-                    <!-- NUEVO: botón borrar -->
-                    <Button x:Name="DeleteButton"
-                        Content="Delete Selected"
-                        Margin="0,5,0,5"
-                        Click="DeleteButton_Click"
-                        IsEnabled="False"
-                        Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
-                        Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
-                    <Button x:Name="LoadButton" Content="{x:Static local:Strings.LoadSelectedList}" Click="LoadButton_Click" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
-                    <Button Content="Refresh" Margin="0,5,0,5" Click="Refresh_Click"/>
+                    <ListBox x:Name="SavedListsListBox"
+         Height="100"
+         SelectionMode="Single"
+         Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
+         Foreground="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}"
+         SelectionChanged="SavedListsListBox_SelectionChanged"
+         KeyDown="SavedListsListBox_KeyDown"
+         MouseDoubleClick="SavedListsListBox_MouseDoubleClick">
+
+                        <!-- asegurar selección con clic derecho -->
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <EventSetter Event="PreviewMouseRightButtonDown"
+                   Handler="ListBoxItem_PreviewMouseRightButtonDown"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+
+                        <!-- menú contextual -->
+                        <ListBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Load" Click="LoadButton_Click"/>
+                                <MenuItem Header="Rename…" Click="CtxRename_Click"/>
+                                <MenuItem x:Name="DeleteMenuItem" Header="Delete"
+                Click="DeleteButton_Click" InputGestureText="Del"/>
+                                <Separator/>
+                                <MenuItem Header="Open folder…" Click="CtxOpenFolder_Click"/>
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                    </ListBox>
                 </StackPanel>
             </GroupBox>
         </StackPanel>

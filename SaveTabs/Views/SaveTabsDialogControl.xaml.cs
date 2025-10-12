@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -46,10 +47,8 @@ namespace SaveTabs
             this.InitializeComponent();
             _dte = dte;
 
-            // primera vez
             RefreshAll();
 
-            // cada vez que la ventana vuelve a mostrarse
             this.IsVisibleChanged += (_, __) =>
             {
                 if (IsVisible)
@@ -59,21 +58,12 @@ namespace SaveTabs
 
         private void SavedListsListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            DeleteButton.IsEnabled = SavedListsListBox.SelectedItem is string;
+            DeleteMenuItem.IsEnabled = SavedListsListBox.SelectedItem is string;
         }
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
             DeleteSelectedList();
-        }
-
-        private void SavedListsListBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Delete && DeleteButton.IsEnabled)
-            {
-                DeleteSelectedList();
-                e.Handled = true;
-            }
         }
 
         private void DeleteSelectedList()
@@ -115,7 +105,7 @@ namespace SaveTabs
             }
 
             LoadSavedTabLists();
-            DeleteButton.IsEnabled = false;
+            DeleteMenuItem.IsEnabled = false;
         }
 
         private void LoadOpenTabs()
@@ -169,7 +159,6 @@ namespace SaveTabs
                 return;
             }
 
-            // إذا ما تمش اختيار، نحفظ كامل المفتوحين (المحفوظين على الديسك)
             var selected = TabsListBox.SelectedItems.Cast<FileItem>().Select(i => i.FullPath).ToList();
             if (selected.Count == 0)
             {
@@ -246,10 +235,111 @@ namespace SaveTabs
 
                     opened++;
                 }
-                catch { /* ignore */ }
+                catch { }
             }
 
+            LoadOpenTabs();
             System.Windows.MessageBox.Show($"{opened} tab(s) loaded successfully.", "Load Tabs", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void ListBoxItem_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is ListBoxItem lbi) lbi.IsSelected = true;
+        }
+
+        private void SavedListsListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (SavedListsListBox.SelectedItem is string)
+                LoadButton_Click(sender, e);
+        }
+
+        private void SavedListsListBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Delete)
+            {
+                DeleteButton_Click(sender, e);
+                e.Handled = true;
+            }
+        }
+
+        private void CtxOpenFolder_Click(object sender, RoutedEventArgs e)
+        {
+            Directory.CreateDirectory(RootDir);
+            var psi = new ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                Arguments = RootDir,
+                UseShellExecute = true
+            };
+            System.Diagnostics.Process.Start(psi);
+        }
+
+        private void CtxRename_Click(object sender, RoutedEventArgs e)
+        {
+            if (SavedListsListBox.SelectedItem is not string oldName) return;
+
+            var oldFile = Path.Combine(RootDir, $"{Sanitize(oldName)}.json");
+            if (!File.Exists(oldFile))
+            {
+                System.Windows.MessageBox.Show("Saved list not found.", "Save Tabs");
+                LoadSavedTabLists();
+                return;
+            }
+
+            var input = ShowInputDialog("Rename Saved List", "New name:", oldName);
+            if (string.IsNullOrWhiteSpace(input)) return;
+
+            var newName = Sanitize(input);
+            var newFile = Path.Combine(RootDir, $"{newName}.json");
+            if (File.Exists(newFile))
+            {
+                System.Windows.MessageBox.Show("A list with that name already exists.", "Save Tabs");
+                return;
+            }
+
+            try { File.Move(oldFile, newFile); }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Could not rename:\n{ex.Message}", "Save Tabs",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            LoadSavedTabLists();
+            SavedListsListBox.SelectedItem = newName;
+        }
+
+        private string? ShowInputDialog(string title, string label, string initialText = "")
+        {
+            var owner = System.Windows.Window.GetWindow(this);
+
+            var win = new System.Windows.Window
+            {
+                Title = title,
+                Owner = owner,
+                WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner,
+                SizeToContent = System.Windows.SizeToContent.WidthAndHeight,
+                ResizeMode = System.Windows.ResizeMode.NoResize,
+                WindowStyle = System.Windows.WindowStyle.ToolWindow
+            };
+
+            var panel = new StackPanel { Margin = new Thickness(12) };
+            panel.Children.Add(new TextBlock { Text = label, Margin = new Thickness(0, 0, 0, 6) });
+
+            var tb = new TextBox { Text = initialText, MinWidth = 280 };
+            panel.Children.Add(tb);
+
+            var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 10, 0, 0) };
+            var ok = new Button { Content = "OK", IsDefault = true, MinWidth = 80, Margin = new Thickness(0, 0, 8, 0) };
+            var cancel = new Button { Content = "Cancel", IsCancel = true, MinWidth = 80 };
+            buttons.Children.Add(ok);
+            buttons.Children.Add(cancel);
+            panel.Children.Add(buttons);
+
+            ok.Click += (_, __) => win.DialogResult = true;
+            win.Content = panel;
+
+            return win.ShowDialog() == true ? tb.Text : null;
         }
 
     }

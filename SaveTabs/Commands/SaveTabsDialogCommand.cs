@@ -49,7 +49,6 @@ namespace SaveTabs
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            // Muestra (o crea) la ventana
             var window = package.FindToolWindow(typeof(SaveTabsDialog), 0, true);
             if (window?.Frame == null)
                 throw new NotSupportedException("Cannot create tool window");
@@ -57,11 +56,10 @@ namespace SaveTabs
             var windowFrame = (IVsWindowFrame)window.Frame;
             Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
 
-            // 🔹 Aquí añadimos el refresco cada vez que se abre
             if (window is SaveTabsDialog toolWindow &&
                 toolWindow.Content is SaveTabsDialogControl control)
             {
-                control.RefreshAll();   // <- este método lo defines tú en tu UserControl
+                control.RefreshAll();
             }
         }
 

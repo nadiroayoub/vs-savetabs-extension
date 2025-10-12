@@ -23,7 +23,6 @@ namespace SaveTabs
         public SaveTabsDialog() : base(null)
         {
             this.Caption = "Save Tabs Tool";
-            // Get DTE2 from VS
             var dte = (DTE2)Microsoft.VisualStudio.Shell.Package.GetGlobalService(typeof(SDTE));
             this.Content = new SaveTabsDialogControl(dte);
         }

@@ -18,7 +18,6 @@ namespace SaveTabs
         {
             await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
             await SaveTabsDialogCommand.InitializeAsync(this);
-
         }
     }
 }
